@@ -1,30 +1,25 @@
 import os
+import cv2
+import numpy as np
 from PIL import Image
 
-with Image.open("data/absol.png") as pokemon:
-    pokemon = pokemon.convert("HSV")
-
-width = pokemon.size[0]
-length = pokemon.size[1]
-
-red_pixel_count = 0
-
-pixel_table= []
-
-for x in range(0, width):
-    for y in range(0, length):
-        pixel = pokemon.getpixel((x,y))
-        if pixel != (0,0,0):
-            red_pixel_count += 1
-        
-print(red_pixel_count)
-
 data_path = "data/"
-pokemon_dict = {}
 
-# for pokemon in os.listdir(data_path):
-    
-#     pokemon_dict[pokemon] = "test"
-    
-# print(pokemon_dict)
-    
+for pokemon in os.listdir(data_path):
+    pokemon = cv2.imread("data/" + pokemon)
+    hsv = cv2.cvtColor(pokemon, cv2.COLOR_BGR2HSV)
+
+    low_hugh_lower = np.array([0, 100, 20])
+    low_hugh_upper = np.array([10, 255, 255])
+    high_hugh_lower = np.array([160, 100, 20])
+    high_hugh_upper = np.array([179, 255, 255])
+
+    lower_mask = cv2.inRange(hsv, low_hugh_lower, low_hugh_upper)
+    upper_mask = cv2.inRange(hsv, high_hugh_lower, high_hugh_upper)
+
+    mask = lower_mask | upper_mask
+
+    result = cv2.bitwise_and(pokemon, pokemon, mask=mask)
+    red_pixel_count = cv2.countNonZero(mask)
+    print(red_pixel_count)
+
